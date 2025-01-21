@@ -48,4 +48,7 @@ export class ShopService {
       next: (types) => (this.types = types),
     });
   }
+  getProduct(id: string) {
+    return this.http.get<Product>(this.baseUrl + 'products/' + id);
+  }
 }
