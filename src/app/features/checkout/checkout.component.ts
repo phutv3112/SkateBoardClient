@@ -1,4 +1,11 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  NgModule,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { SnackbarService } from '../../core/services/snackbar.service';
 import { StripeService } from '../../core/services/stripe.service';
 import { Router, RouterLink } from '@angular/router';
@@ -23,10 +30,13 @@ import { OrderSummaryComponent } from '../../shared/components/order-summary/ord
 import { MatButtonModule } from '@angular/material/button';
 import { CheckoutDeliveryComponent } from './checkout-delivery/checkout-delivery.component';
 import { CheckoutReviewComponent } from './checkout-review/checkout-review.component';
-import { CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OrderToCreate, ShippingAddress } from '../../shared/models/order';
 import { OrderService } from '../../core/services/order.service';
+import { MatRadioModule } from '@angular/material/radio';
+import { PaymentService } from '../../core/services/payment.service';
+import { PaymentVnPayModel } from '../../shared/models/payment.vnpay';
 
 @Component({
   selector: 'app-checkout',
@@ -41,6 +51,8 @@ import { OrderService } from '../../core/services/order.service';
     CheckoutReviewComponent,
     CurrencyPipe,
     MatProgressSpinnerModule,
+    MatRadioModule,
+    CommonModule,
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',
@@ -48,6 +60,7 @@ import { OrderService } from '../../core/services/order.service';
 export class CheckoutComponent implements OnInit, OnDestroy {
   private stripeService = inject(StripeService);
   private snackbar = inject(SnackbarService);
+  private paymentService = inject(PaymentService);
   private router = inject(Router);
   private accountService = inject(AccountService);
   cartService = inject(CartService);
@@ -71,13 +84,40 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.addressElement.on('change', this.handleAddressChange);
 
       this.paymentElement = await this.stripeService.createPaymentElement();
-      this.paymentElement.mount('#payment-element');
+      if (this.paymentMethod() === 'Card') {
+        this.mountPaymentElement();
+        //this.paymentElement.mount('#payment-element');
+        //this.paymentElement.on('change', this.handlePaymentChange);
+      }
+      //this.paymentElement.mount('#payment-element');
       this.paymentElement.on('change', this.handlePaymentChange);
     } catch (error: any) {
       this.snackbar.error(error.message);
     }
   }
+  setPaymentMethod(value: 'VNPay' | 'Card') {
+    console.log('payment method: ' + value);
+    this.paymentMethod.set(value);
+    setTimeout(() => {
+      if (value === 'Card') {
+        this.mountPaymentElement();
+      } else {
+        this.unmountPaymentElement();
+      }
+    }, 100);
+  }
+  private mountPaymentElement() {
+    const paymentElementContainer = document.getElementById('payment-element');
+    if (paymentElementContainer && this.paymentElement) {
+      this.paymentElement.mount('#payment-element');
+    }
+  }
 
+  private unmountPaymentElement() {
+    if (this.paymentElement) {
+      this.paymentElement.unmount();
+    }
+  }
   handleAddressChange = (event: StripeAddressElementChangeEvent) => {
     this.completionStatus.update((state) => {
       state.address = event.complete;
@@ -135,28 +175,46 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   async confirmPayment(stepper: MatStepper) {
     this.loading = true;
     try {
-      if (this.confirmationToken) {
-        const result = await this.stripeService.confirmPayment(
-          this.confirmationToken
-        );
-        if (result.paymentIntent?.status === 'succeeded') {
-          const order = await this.createOrderModel();
-          const orderResult = await firstValueFrom(
-            this.orderService.createOrder(order)
+      if (this.paymentMethod() == 'Card') {
+        if (this.confirmationToken) {
+          const result = await this.stripeService.confirmPayment(
+            this.confirmationToken
           );
-          if (orderResult) {
-            this.orderService.orderCompleted = true;
-            this.cartService.deleteCart();
-            this.cartService.selectedDelivery.set(null);
-            this.router.navigateByUrl('/checkout/success');
+          if (result.paymentIntent?.status === 'succeeded') {
+            const order = await this.createOrderModel();
+            const orderResult = await firstValueFrom(
+              this.orderService.createOrder(order)
+            );
+            if (orderResult) {
+              this.orderService.orderCompleted = true;
+              this.cartService.deleteCart();
+              this.cartService.selectedDelivery.set(null);
+              this.router.navigateByUrl('/checkout/success');
+            } else {
+              throw new Error('Failed to create order');
+            }
+          } else if (result.error) {
+            throw new Error(result.error.message);
           } else {
-            throw new Error('Failed to create order');
+            throw new Error('Something went wrong');
           }
-        } else if (result.error) {
-          throw new Error(result.error.message);
-        } else {
-          throw new Error('Something went wrong');
         }
+      } else {
+        var model: PaymentVnPayModel = {
+          orderType: 'other',
+          amount: this.cartService.totals()?.total || 0,
+          orderDescription: 'Order',
+          name: 'Order',
+        };
+        this.paymentService.getPaymentVnPayUrl(model).subscribe({
+          next: (url) => {
+            console.log('Redirecting to VNPAY:', url);
+            window.location.href = url;
+          },
+          error: (error) => {
+            console.log('Get VnPay url err:', error);
+          },
+        });
       }
     } catch (error: any) {
       this.snackbar.error(error.message || 'Something went wrong');

@@ -23,19 +23,25 @@
                     <button [disabled]="!completionStatus().delivery" matStepperNext mat-flat-button>Next</button>
                 </div>
             </mat-step>
-            <mat-step label="Payment" [completed]="completionStatus().card">
-                <div id="payment-element"></div>
+            <mat-step label="Payment" [completed]="completionStatus().card || paymentMethod() === 'VNPay'">
+                <mat-radio-group [value]="paymentMethod()" (change)="setPaymentMethod($event.value)">
+                    <mat-radio-button class="mx-2" value="VNPay">VNPay</mat-radio-button>
+                    <mat-radio-button class="mx-2" value="Card">Card</mat-radio-button>
+                </mat-radio-group>
+
+                <div id="payment-element" *ngIf="paymentMethod() === 'Card'"></div>
                 <div class="flex justify-between mt-6">
                     <button matStepperPrevious mat-stroked-button>Back</button>
-                    <button [disabled]="!completionStatus().card" matStepperNext mat-flat-button>Next</button>
+                    <button [disabled]="!completionStatus().card && paymentMethod() === 'Card'" matStepperNext
+                        mat-flat-button>Next</button>
                 </div>
             </mat-step>
             <mat-step label="Confirmation">
                 <app-checkout-review [confirmationToken]="confirmationToken"></app-checkout-review>
                 <div class="flex justify-between mt-6">
                     <button matStepperPrevious mat-stroked-button>Back</button>
-                    <button [disabled]="!confirmationToken || loading" (click)="confirmPayment(stepper)"
-                        mat-flat-button>
+                    <button [disabled]="!confirmationToken && paymentMethod() === 'Card' || loading"
+                        (click)="confirmPayment(stepper)" mat-flat-button>
                         @if (loading) {
                         <mat-spinner diameter="20"></mat-spinner>
                         } @else {
