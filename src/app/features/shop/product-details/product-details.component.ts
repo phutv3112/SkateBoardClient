@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CartService } from '../../../core/services/cart.service';
 import { FormsModule } from '@angular/forms';
+import { PhotoEditorComponent } from '../../../shared/components/photo-editor/photo-editor.component';
 
 @Component({
   selector: 'app-product-details',
@@ -22,6 +23,7 @@ import { FormsModule } from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
+    PhotoEditorComponent,
   ],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.scss',

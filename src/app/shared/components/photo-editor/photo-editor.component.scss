@@ -1,0 +1,125 @@
+// img.img-thumbnail {
+//     height: 100px;
+//     min-width: 100px !important;
+//     margin-bottom: 2px;
+// }
+
+// .nv-file-over {
+//     border: dotted 3px red;
+// }
+
+// input[type=file] {
+//     color: transparent;
+// }
+// .my-drop-zone { border: dotted 3px lightgray; }
+// .nv-file-over { border: dotted 3px red; } 
+// .another-file-over-class { border: dotted 3px green; }
+
+.file-upload-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .upload-section {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .file-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .upload-button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+  
+  .file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .file-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .file-preview {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+  
+  .file-icon {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    background: #f8f9fa;
+  }
+  
+  .file-info {
+    padding: 10px;
+  }
+  
+  .file-name {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .download-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+  
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+// chat
+  .custom-file-label {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #3490dc;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.file-input {
+    display: none; /* Ẩn input file */
+}
+
+.file-names {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
+
+

@@ -28,6 +28,10 @@ export class SignalRService {
       .catch((error) => console.log('error when create connection ' + error));
 
     this.hubConnection.on('OrderCompleteNotification', (order: Order) => {
+      console.log(
+        'Received OrderCompleteNotification by signalR:====================',
+        order
+      );
       this.orderSignal.set(order);
     });
   }
